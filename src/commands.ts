@@ -1,10 +1,11 @@
-import { setUser } from "./config.js";
+import { readConfig, setUser } from "./config.js";
+
 import {
   createUser,
   getUserByName,
   deleteUsers,
-} from "./lib/db/queries/users.js";
-export type CommandHandler = (
+  getUsers,
+} from "./lib/db/queries/users.js";export type CommandHandler = (
   cmdName: string,
   ...args: string[]
 ) => Promise<void>;
@@ -86,4 +87,22 @@ export async function handlerReset(
 ): Promise<void> {
   await deleteUsers();
   console.log("Database reset successfully");
+}
+
+
+
+export async function handlerUsers(
+  cmdName: string,
+  ...args: string[]
+): Promise<void> {
+  const allUsers = await getUsers();
+  const config = readConfig();
+
+  for (const user of allUsers) {
+    if (user.name === config.currentUserName) {
+      console.log(`* ${user.name} (current)`);
+    } else {
+      console.log(`* ${user.name}`);
+    }
+  }
 }
