@@ -1,0 +1,25 @@
+{
+  "name": "blog-aggregator",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "tsx ./src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ahmad345-hub/blog-aggregator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ahmad345-hub/blog-aggregator/issues"
+  },
+  "homepage": "https://github.com/ahmad345-hub/blog-aggregator#readme",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^26.6.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
