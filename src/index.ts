@@ -3,6 +3,7 @@ import {
   handlerLogin,
   middlewareLoggedIn,
   handlerFollow,
+  handlerUnfollow,
   handlerFollowing,
   handlerRegister,
   handlerReset,
@@ -20,6 +21,11 @@ import {
   registerCommand(registry, "reset", handlerReset);
   registerCommand(registry, "users", handlerUsers);
   registerCommand(registry, "agg", handlerAgg);
+  registerCommand(
+  registry,
+  "unfollow",
+  middlewareLoggedIn(handlerUnfollow)
+);
   registerCommand(
   registry,
   "addfeed",

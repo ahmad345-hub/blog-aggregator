@@ -3,6 +3,7 @@ import { fetchFeed } from "./rss.js";
 import {
   createFeedFollow,
   getFeedFollowsForUser,
+    deleteFeedFollow,
 } from "./lib/db/queries/feedFollows.js";
 import {
   createFeed,
@@ -232,4 +233,21 @@ export function middlewareLoggedIn(
 
     await handler(cmdName, user, ...args);
   };
+}
+
+
+export async function handlerUnfollow(
+  cmdName: string,
+  user: User,
+  ...args: string[]
+): Promise<void> {
+  if (args.length < 1) {
+    throw new Error("url is required");
+  }
+
+  const url = args[0];
+
+  await deleteFeedFollow(user.id, url);
+
+  console.log(`Unfollowed ${url}`);
 }
