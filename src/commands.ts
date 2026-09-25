@@ -1,4 +1,8 @@
 import { readConfig, setUser } from "./config.js";
+import {
+  createPost,
+  getPostsForUser,
+} from "./lib/db/queries/posts.js";
 import { fetchFeed } from "./rss.js";
 import {
   createFeedFollow,
@@ -296,7 +300,20 @@ export async function scrapeFeeds(): Promise<void> {
   await markFeedFetched(feed.id);
 
   for (const item of rssFeed.channel.item) {
-    console.log(item.title);
+    const publishedAt = new Date(item.pubDate);
+
+    if (isNaN(publishedAt.getTime())) {
+      console.log(`Invalid date for post: ${item.title}`);
+      continue;
+    }
+
+    await createPost(
+      item.title,
+      item.link,
+      item.description,
+      publishedAt,
+      feed.id
+    );
   }
 }
 
@@ -328,5 +345,34 @@ export function parseDuration(durationStr: string): number {
 
     default:
       throw new Error("Invalid duration");
+  }
+}
+
+
+export async function handlerBrowse(
+  cmdName: string,
+  user: User,
+  ...args: string[]
+): Promise<void> {
+  let limit = 2;
+
+  if (args.length > 0) {
+    limit = Number(args[0]);
+
+    if (isNaN(limit) || limit <= 0) {
+      throw new Error("limit must be a positive number");
+    }
+  }
+
+  const userPosts = await getPostsForUser(user.id, limit);
+
+  for (const result of userPosts) {
+    const post = result.post;
+
+    console.log(`Title: ${post.title}`);
+    console.log(`URL: ${post.url}`);
+    console.log(`Description: ${post.description ?? ""}`);
+    console.log(`Published At: ${post.publishedAt}`);
+    console.log();
   }
 }

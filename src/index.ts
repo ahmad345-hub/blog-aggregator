@@ -3,6 +3,7 @@ import {
   handlerLogin,
   middlewareLoggedIn,
   handlerFollow,
+  handlerBrowse,
   handlerUnfollow,
   handlerFollowing,
   handlerRegister,
@@ -17,6 +18,11 @@ import {
   const registry: CommandsRegistry = {};
 
   registerCommand(registry, "login", handlerLogin);
+  registerCommand(
+  registry,
+  "browse",
+  middlewareLoggedIn(handlerBrowse)
+);
   registerCommand(registry, "register", handlerRegister);
   registerCommand(registry, "reset", handlerReset);
   registerCommand(registry, "users", handlerUsers);
