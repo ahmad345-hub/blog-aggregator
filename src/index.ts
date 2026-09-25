@@ -5,6 +5,7 @@ import {
   handlerReset,
   handlerUsers,
   handlerAddFeed,
+  handlerFeeds,
   handlerAgg,
   registerCommand,
   runCommand,
@@ -17,6 +18,7 @@ import {
   registerCommand(registry, "users", handlerUsers);
   registerCommand(registry, "agg", handlerAgg);
   registerCommand(registry, "addfeed", handlerAddFeed);
+  registerCommand(registry, "feeds", handlerFeeds);
 
   const args = process.argv.slice(2);
 
