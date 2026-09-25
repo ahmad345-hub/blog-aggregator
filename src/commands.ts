@@ -1,4 +1,5 @@
 import { readConfig, setUser } from "./config.js";
+import { fetchFeed } from "./rss.js";
 
 import {
   createUser,
@@ -105,4 +106,14 @@ export async function handlerUsers(
       console.log(`* ${user.name}`);
     }
   }
+}
+
+
+export async function handlerAgg(
+  cmdName: string,
+  ...args: string[]
+): Promise<void> {
+  const feed = await fetchFeed("https://www.wagslane.dev/index.xml");
+
+  console.log(JSON.stringify(feed, null, 2));
 }
