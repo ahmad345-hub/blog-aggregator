@@ -1,8 +1,13 @@
 import { readConfig, setUser } from "./config.js";
 import { fetchFeed } from "./rss.js";
 import {
+  createFeedFollow,
+  getFeedFollowsForUser,
+} from "./lib/db/queries/feedFollows.js";
+import {
   createFeed,
   getFeeds,
+  getFeedByUrl,
 } from "./lib/db/queries/feeds.js";
 import type { Feed, User } from "./lib/db/schema.js";
 
@@ -119,6 +124,7 @@ export async function handlerAgg(
   ...args: string[]
 ): Promise<void> {
   const feed = await fetchFeed("https://www.wagslane.dev/index.xml");
+  
 
   console.log(JSON.stringify(feed, null, 2));
 }
@@ -159,8 +165,10 @@ export async function handlerAddFeed(
   }
 
   const feed = await createFeed(name, url, user.id);
+  const follow = await createFeedFollow(user.id, feed.id);
 
   printFeed(feed, user);
+  console.log(`${follow.userName} is now following ${follow.feedName}`);
 }
 
 
@@ -175,5 +183,60 @@ export async function handlerFeeds(
     console.log(`URL: ${result.feed.url}`);
     console.log(`User: ${result.user.name}`);
     console.log();
+  }
+}
+
+export async function handlerFollow(
+  cmdName: string,
+  ...args: string[]
+): Promise<void> {
+  if (args.length < 1) {
+    throw new Error("url is required");
+  }
+
+  const url = args[0];
+  const config = readConfig();
+
+  if (!config.currentUserName) {
+    throw new Error("No current user");
+  }
+
+  const user = await getUserByName(config.currentUserName);
+
+  if (!user) {
+    throw new Error("Current user does not exist");
+  }
+
+  const feed = await getFeedByUrl(url);
+
+  if (!feed) {
+    throw new Error("Feed does not exist");
+  }
+
+  const follow = await createFeedFollow(user.id, feed.id);
+
+  console.log(`${follow.userName} is now following ${follow.feedName}`);
+}
+
+export async function handlerFollowing(
+  cmdName: string,
+  ...args: string[]
+): Promise<void> {
+  const config = readConfig();
+
+  if (!config.currentUserName) {
+    throw new Error("No current user");
+  }
+
+  const user = await getUserByName(config.currentUserName);
+
+  if (!user) {
+    throw new Error("Current user does not exist");
+  }
+
+  const follows = await getFeedFollowsForUser(user.id);
+
+  for (const follow of follows) {
+    console.log(follow.feedName);
   }
 }
