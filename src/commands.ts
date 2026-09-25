@@ -143,6 +143,7 @@ export function printFeed(feed: Feed, user: User): void {
 
 export async function handlerAddFeed(
   cmdName: string,
+  user: User,
   ...args: string[]
 ): Promise<void> {
   if (args.length < 2) {
@@ -152,24 +153,16 @@ export async function handlerAddFeed(
   const name = args[0];
   const url = args[1];
 
-  const config = readConfig();
-
-  if (!config.currentUserName) {
-    throw new Error("No current user");
-  }
-
-  const user = await getUserByName(config.currentUserName);
-
-  if (!user) {
-    throw new Error("Current user does not exist");
-  }
-
   const feed = await createFeed(name, url, user.id);
+
   const follow = await createFeedFollow(user.id, feed.id);
 
   printFeed(feed, user);
+
   console.log(`${follow.userName} is now following ${follow.feedName}`);
 }
+
+
 
 
 export async function handlerFeeds(
@@ -188,6 +181,7 @@ export async function handlerFeeds(
 
 export async function handlerFollow(
   cmdName: string,
+  user: User,
   ...args: string[]
 ): Promise<void> {
   if (args.length < 1) {
@@ -195,17 +189,6 @@ export async function handlerFollow(
   }
 
   const url = args[0];
-  const config = readConfig();
-
-  if (!config.currentUserName) {
-    throw new Error("No current user");
-  }
-
-  const user = await getUserByName(config.currentUserName);
-
-  if (!user) {
-    throw new Error("Current user does not exist");
-  }
 
   const feed = await getFeedByUrl(url);
 
@@ -220,23 +203,33 @@ export async function handlerFollow(
 
 export async function handlerFollowing(
   cmdName: string,
+  user: User,
   ...args: string[]
 ): Promise<void> {
-  const config = readConfig();
-
-  if (!config.currentUserName) {
-    throw new Error("No current user");
-  }
-
-  const user = await getUserByName(config.currentUserName);
-
-  if (!user) {
-    throw new Error("Current user does not exist");
-  }
-
   const follows = await getFeedFollowsForUser(user.id);
 
   for (const follow of follows) {
     console.log(follow.feedName);
   }
+}
+
+
+export function middlewareLoggedIn(
+  handler: UserCommandHandler
+): CommandHandler {
+  return async (cmdName: string, ...args: string[]) => {
+    const config = readConfig();
+
+    if (!config.currentUserName) {
+      throw new Error("No current user");
+    }
+
+    const user = await getUserByName(config.currentUserName);
+
+    if (!user) {
+      throw new Error(`User ${config.currentUserName} not found`);
+    }
+
+    await handler(cmdName, user, ...args);
+  };
 }
