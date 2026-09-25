@@ -1,5 +1,7 @@
 import { readConfig, setUser } from "./config.js";
 import { fetchFeed } from "./rss.js";
+import { createFeed } from "./lib/db/queries/feeds.js";
+import type { Feed, User } from "./lib/db/schema.js";
 
 import {
   createUser,
@@ -116,4 +118,44 @@ export async function handlerAgg(
   const feed = await fetchFeed("https://www.wagslane.dev/index.xml");
 
   console.log(JSON.stringify(feed, null, 2));
+}
+
+
+export function printFeed(feed: Feed, user: User): void {
+  console.log(`Feed ID: ${feed.id}`);
+  console.log(`Feed Name: ${feed.name}`);
+  console.log(`Feed URL: ${feed.url}`);
+  console.log(`User: ${user.name}`);
+  console.log(`Created At: ${feed.createdAt}`);
+  console.log(`Updated At: ${feed.updatedAt}`);
+}
+
+
+
+export async function handlerAddFeed(
+  cmdName: string,
+  ...args: string[]
+): Promise<void> {
+  if (args.length < 2) {
+    throw new Error("name and url are required");
+  }
+
+  const name = args[0];
+  const url = args[1];
+
+  const config = readConfig();
+
+  if (!config.currentUserName) {
+    throw new Error("No current user");
+  }
+
+  const user = await getUserByName(config.currentUserName);
+
+  if (!user) {
+    throw new Error("Current user does not exist");
+  }
+
+  const feed = await createFeed(name, url, user.id);
+
+  printFeed(feed, user);
 }
